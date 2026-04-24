@@ -6,16 +6,23 @@ const startScreen = document.getElementById("start-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
 const startButton = document.getElementById("start-button");
 const restartButton = document.getElementById("restart-button");
+const exitButton = document.getElementById("exit-button");
 const pauseButton = document.getElementById("pause-button");
+const soundButton = document.getElementById("sound-button");
+const menuButton = document.getElementById("menu-button");
 const sensorNote = document.getElementById("sensor-note");
 const finalScore = document.getElementById("final-score");
 const startTitle = document.getElementById("start-title");
 const startCopy = document.getElementById("start-copy");
 const controlTips = document.getElementById("control-tips");
+const difficultyButtons = Array.from(document.querySelectorAll("[data-difficulty]"));
 
 const GRID_SIZE = 24;
-const INITIAL_STEP_MS = 140;
-const MIN_STEP_MS = 72;
+const DIFFICULTIES = {
+  easy: { label: "Easy", initialStepMs: 160, minStepMs: 84, scoreReduction: 2.8 },
+  normal: { label: "Normal", initialStepMs: 140, minStepMs: 72, scoreReduction: 3.5 },
+  hard: { label: "Hard", initialStepMs: 120, minStepMs: 60, scoreReduction: 4.3 },
+};
 const IS_COARSE_POINTER = window.matchMedia("(pointer: coarse)").matches;
 const INPUT_PROFILE = IS_COARSE_POINTER
   ? {
@@ -44,6 +51,8 @@ const state = {
   gameOver: false,
   score: 0,
   best: Number(localStorage.getItem("tilt-slither-best") || 0),
+  soundEnabled: true,
+  difficulty: "easy",
   width: 0,
   height: 0,
   cols: 0,
@@ -55,7 +64,7 @@ const state = {
   food: { x: 0, y: 0 },
   lastFrame: 0,
   accumulator: 0,
-  stepMs: INITIAL_STEP_MS,
+  stepMs: DIFFICULTIES.easy.initialStepMs,
   motion: { x: 0, y: 0 },
   tiltLock: null,
   audio: null,
@@ -96,6 +105,18 @@ function updateStartHints(controlMode = "tilt") {
 function syncPauseUi() {
   pauseButton.textContent = state.paused ? "Resume" : "Pause";
   pauseButton.setAttribute("aria-label", state.paused ? "Resume game" : "Pause game");
+}
+
+function syncSoundUi() {
+  soundButton.textContent = state.soundEnabled ? "Sound on" : "Sound off";
+  soundButton.setAttribute("aria-label", state.soundEnabled ? "Turn sound off" : "Turn sound on");
+}
+
+function syncDifficultyUi() {
+  difficultyButtons.forEach((button) => {
+    const isActive = button.dataset.difficulty === state.difficulty;
+    button.classList.toggle("choice-button--active", isActive);
+  });
 }
 
 function getSavedBest() {
@@ -163,7 +184,7 @@ function resetGame() {
   state.snake = createSnake();
   state.direction = { x: 1, y: 0 };
   state.queuedDirection = { x: 1, y: 0 };
-  state.stepMs = INITIAL_STEP_MS;
+  state.stepMs = DIFFICULTIES[state.difficulty].initialStepMs;
   state.accumulator = 0;
   state.gameOver = false;
   state.running = true;
@@ -198,6 +219,19 @@ function endGame() {
   gameOverScreen.classList.add("overlay--active");
   playTone(180, 0.16, "sawtooth");
   playTone(110, 0.22, "square", 0.12);
+}
+
+function showMenu() {
+  state.running = false;
+  state.gameOver = false;
+  state.paused = false;
+  state.accumulator = 0;
+  state.neutral = null;
+  state.sensorSource = null;
+  state.tiltLock = null;
+  syncPauseUi();
+  gameOverScreen.classList.remove("overlay--active");
+  startScreen.classList.add("overlay--active");
 }
 
 function togglePause() {
@@ -404,6 +438,10 @@ function onKeyDown(event) {
 }
 
 function playTone(frequency, duration, type = "sine", delay = 0) {
+  if (!state.soundEnabled) {
+    return;
+  }
+
   if (!state.audio) {
     state.audio = new (window.AudioContext || window.webkitAudioContext)();
   }
@@ -427,8 +465,9 @@ function playTone(frequency, duration, type = "sine", delay = 0) {
 }
 
 function updateSpeed() {
-  const reduction = Math.min(70, state.score * 3.5);
-  state.stepMs = Math.max(MIN_STEP_MS, INITIAL_STEP_MS - reduction);
+  const difficulty = DIFFICULTIES[state.difficulty];
+  const reduction = Math.min(70, state.score * difficulty.scoreReduction);
+  state.stepMs = Math.max(difficulty.minStepMs, difficulty.initialStepMs - reduction);
 }
 
 function advanceSnake() {
@@ -590,15 +629,32 @@ async function startGame() {
   playTone(640, 0.08, "sine", 0.05);
 }
 
+function setDifficulty(nextDifficulty) {
+  state.difficulty = nextDifficulty;
+  syncDifficultyUi();
+}
+
+difficultyButtons.forEach((button) => {
+  button.addEventListener("click", () => setDifficulty(button.dataset.difficulty));
+});
+
 startButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", startGame);
+exitButton.addEventListener("click", showMenu);
 pauseButton.addEventListener("click", togglePause);
+soundButton.addEventListener("click", () => {
+  state.soundEnabled = !state.soundEnabled;
+  syncSoundUi();
+});
+menuButton.addEventListener("click", showMenu);
 window.addEventListener("keydown", onKeyDown);
 window.addEventListener("resize", resizeCanvas, { passive: true });
 window.addEventListener("orientationchange", resizeCanvas, { passive: true });
 
 updateStartHints(hasSensorSupport() ? "tilt" : "keyboard");
 syncPauseUi();
+syncSoundUi();
+syncDifficultyUi();
 resizeCanvas();
 setBest(state.best);
 draw();

@@ -26,7 +26,13 @@
           <p class="label">Best</p>
           <h2 id="best">0</h2>
         </div>
-        <button class="hud-button" id="pause-button" type="button" aria-label="Pause game">Pause</button>
+        <div class="hud-actions">
+          <button class="hud-button" id="sound-button" type="button" aria-label="Turn sound off">Sound on</button>
+          <button class="hud-button" id="pause-button" type="button" aria-label="Pause game">Pause</button>
+          <button class="hud-button hud-button--ghost" id="menu-button" type="button" aria-label="Return to menu">
+            Menu
+          </button>
+        </div>
       </section>
 
       <section class="overlay overlay--active" id="start-screen" aria-live="polite">
@@ -37,6 +43,13 @@
             Hold your phone flat, tap start, then physically tilt left, right, up, or down to
             steer. The game listens to gyro or accelerometer data in real time.
           </p>
+          <div class="difficulty-group" aria-label="Difficulty selection">
+            <button class="choice-button choice-button--active" type="button" data-difficulty="easy">
+              Easy
+            </button>
+            <button class="choice-button" type="button" data-difficulty="normal">Normal</button>
+            <button class="choice-button" type="button" data-difficulty="hard">Hard</button>
+          </div>
           <ul class="tips" id="control-tips">
             <li>Tilt past the dead zone to trigger a turn.</li>
             <li>Eat the neon fruit to grow and speed up.</li>
@@ -53,6 +66,7 @@
           <h2>You hit the edge.</h2>
           <p class="copy" id="final-score">Final score: 0</p>
           <button class="primary" id="restart-button">Play again</button>
+          <button class="secondary" id="exit-button" type="button">Back to menu</button>
         </div>
       </section>
     </main>
