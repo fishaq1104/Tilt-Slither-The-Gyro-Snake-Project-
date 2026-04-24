@@ -3,6 +3,10 @@
 Tilt Slither is a modern Snake game built for mobile browsers with motion controls.
 Instead of tapping keys, you tilt your phone to steer the snake.
 
+The GAME:
+
+https://fishaq1104.github.io/Tilt-Slither-The-Gyro-Snake-Project-/
+
 ## Features
 
 - Motion steering via Device Orientation / Device Motion APIs
@@ -21,21 +25,6 @@ Instead of tapping keys, you tilt your phone to steer the snake.
 - Avoid walls and your own body
 - Eat fruit to grow and increase speed
 
-## Quick Start
-
-This project is plain HTML/CSS/JS, no build step required.
-
-1. Open `index.html` in a browser, or serve the folder with any static file server.
-2. On iOS/Safari, tap Start and allow motion permissions when prompted.
-3. Keep your phone roughly level for better calibration.
-
-Example local server:
-
-```bash
-python3 -m http.server 8080
-```
-
-Then visit `http://localhost:8080`.
 
 ## Files
 
@@ -43,7 +32,3 @@ Then visit `http://localhost:8080`.
 - `styles.css`: visual style and responsive layout
 - `app.js`: game loop, snake logic, rendering, and sensor input
 
-## Notes
-
-- Best score is stored in `localStorage` under `tilt-slither-best`.
-- If sensors are unavailable, keyboard controls still work.
